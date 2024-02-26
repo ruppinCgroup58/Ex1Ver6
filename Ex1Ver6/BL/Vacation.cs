@@ -12,6 +12,8 @@ namespace Ex1Ver6.BL
         DateTime startDate;
         DateTime endDate;
         static List<Vacation> vacationsList = new List<Vacation>();
+        DBServices dbs = new DBServices();
+
         public Vacation()
         {
 
@@ -40,6 +42,7 @@ namespace Ex1Ver6.BL
         /// </returns>
         public bool Insert()
         {
+            vacationsList = new Vacation().Read();
             if (!checkIfFlatExist())
             {
                 return false;
@@ -69,7 +72,8 @@ namespace Ex1Ver6.BL
                     }
                 }
             } //Finished this loop if the flat is avilable
-            vacationsList.Add(this);
+            
+            dbs.InsertVacation(this);
             return true;
 
         }
@@ -86,21 +90,13 @@ namespace Ex1Ver6.BL
             return false;
         }
 
-        public static List<Vacation> Read()
+        public List<Vacation> Read()
         {
-            return vacationsList;
+            return dbs.ReadVacation();
         }
-        public static List<Vacation> getByDates(DateTime start, DateTime end)
+        public List<Vacation> getByDates(DateTime start, DateTime end)
         {
-            List<Vacation> vacationsByDates = new List<Vacation>();
-            foreach (Vacation vacation in vacationsList)
-            {
-                if (vacation.StartDate.Date.CompareTo(start.Date) >= 0 && vacation.EndDate.Date.CompareTo(end.Date)<=0)
-                {
-                    vacationsByDates.Add(vacation);
-                }
-            }
-            return vacationsByDates;
+            return dbs.getVacationsByDates(start, end);
         }
     }
 }

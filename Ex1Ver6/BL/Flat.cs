@@ -34,6 +34,7 @@ namespace Ex1Ver6.BL
 
         public bool Insert()
         {
+            FlatsList = new Flat().Read();
             foreach (Flat item in FlatsList)
             {
                 if (item.Id == Id)
@@ -41,14 +42,14 @@ namespace Ex1Ver6.BL
                     return false;
                 }
             }
-            dbs.Insert(this);
-            FlatsList.Add(this);
+            dbs.InsertFlat(this);
+            //FlatsList.Add(this);
             return true;
         }
 
         public List<Flat> Read()
         {
-            return dbs.Read();
+            return dbs.ReadFlat();
         }
 
         public double discount(double value)
@@ -62,15 +63,9 @@ namespace Ex1Ver6.BL
             }
         }
 
-        public static IEnumerable<Flat> GetByCityAndPrice(string city, double price)
+        public List<Flat> GetByCityAndPrice(string city, double price)
         {
-            List<Flat> listReturn = new List<Flat>();
-            foreach (Flat item in FlatsList)
-            {
-                if (item.Price <= price && item.City == city)
-                    listReturn.Add(item);
-            }
-            return listReturn;
+            return dbs.GetByCityAndPrice(city,price);
         }
         
     }

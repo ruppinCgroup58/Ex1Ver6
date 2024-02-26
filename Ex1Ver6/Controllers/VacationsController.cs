@@ -13,7 +13,7 @@ namespace Ex1Ver6.Controllers
         [HttpGet]
         public IEnumerable<Vacation> Get()
         {
-            return Vacation.Read();
+            return new Vacation().Read();
         }
 
         // GET api/<VacationsController>/5
@@ -44,7 +44,7 @@ namespace Ex1Ver6.Controllers
         [HttpGet("getByDates/startDate/{startDate}/endDate/{endDate}")]
         public IEnumerable<Vacation> getByDates(DateTime startDate, DateTime endDate)
         {
-            return Vacation.getByDates(startDate, endDate);
+            return new Vacation().getByDates(startDate, endDate);
         }
     }
 }

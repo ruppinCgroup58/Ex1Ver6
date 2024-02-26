@@ -44,7 +44,7 @@ namespace Ex1Ver6.Controllers
         [HttpGet("GetByCityAndPrice")]
         public IEnumerable<Flat> GetByCityAndPrice(string city, double price)
         {
-            return Flat.GetByCityAndPrice(city, price);
+            return new Flat().GetByCityAndPrice(city, price);
         }
     }
 }

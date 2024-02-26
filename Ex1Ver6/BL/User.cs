@@ -7,6 +7,7 @@
         string email;
         string password;
         static List<User> usersList= new List<User>();
+        DBServices dbs = new DBServices();
 
         public User() { }
 
@@ -25,7 +26,7 @@
 
         public bool Insert()
         {
-            usersList.Add(this);
+            dbs.InsertUser(this);
             return true;
         }
 
