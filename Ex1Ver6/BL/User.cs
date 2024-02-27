@@ -24,22 +24,23 @@
         public string Email { get => email; set => email = value; }
         public string Password { get => password; set => password = value; }
 
-        public bool Insert()
+        public List<User> Read()
         {
-            dbs.InsertUser(this);
-            return true;
+            return dbs.ReadUser();
+        }
+        public int Insert()
+        {
+            return dbs.InsertUser(this);
         }
 
-        public bool Update(string id, string password)
+        public int Update(string email, string password)
         {
-            foreach (var user in usersList)
-            {
-                if (user.email == id)
-                {
-                    user.password = password;
-                }
-            }
-            return true;
+            return dbs.UpdatePassword(email, password);
+        }
+
+        public User Login(string email, string password)
+        {
+            return dbs.Login(email, password);
         }
     }
 }

@@ -415,7 +415,58 @@ public class DBServices
 
         return cmd;
     }
-    
+
+    public List<User> ReadUser()
+    {
+
+        SqlConnection con;
+        SqlCommand cmd;
+        List<User> usersList = new List<User>();
+
+        try
+        {
+            con = connect("myProjDB"); // create the connection
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        cmd = CreateCommandWithStoredProcedureWithoutParameters("sp_getUsers", con);             // create the command
+
+        try
+        {
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+            while (dataReader.Read())
+            {
+                User u = new User();
+                u.FirstName = dataReader["firstName"].ToString();
+                u.FamilyName = dataReader["familyName"].ToString();
+                u.Email = dataReader["email"].ToString();
+                u.Password = dataReader["password"].ToString();
+                usersList.Add(u);
+            }
+            return usersList;
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+
+    }
+
     public int InsertUser(User user)
     {
         SqlConnection con;
@@ -454,6 +505,88 @@ public class DBServices
         }
     }
 
+    public int UpdatePassword(string email, string password)
+    {
+        SqlConnection con;
+        SqlCommand cmd;
+
+        try
+        {
+            con = connect("myProjDB"); // create the connection
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        cmd = CreateUserUpdateCommandWithStoredProcedureWithParameters("sp_updatePassword", con, email, password);             // create the command
+
+        try
+        {
+            int numEffected = cmd.ExecuteNonQuery(); // execute the command
+            return numEffected;
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+    }
+
+    public User Login(string email, string password)
+    {
+        SqlConnection con;
+        SqlCommand cmd;
+
+        try
+        {
+            con = connect("myProjDB"); // create the connection
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        cmd = CreateUserUpdateCommandWithStoredProcedureWithParameters("sp_loginUser", con, email, password);             // create the command
+
+        try
+        {
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            dataReader.Read();
+                User u = new User();
+                u.FirstName = dataReader["firstName"].ToString();
+                u.FamilyName = dataReader["familyName"].ToString();
+                u.Email = dataReader["email"].ToString();
+                u.Password = dataReader["password"].ToString();
+
+            return u;
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException("Not Found", null, System.Net.HttpStatusCode.NotFound);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+    }
+
     private SqlCommand CreateUserInsertCommandWithStoredProcedure(String spName, SqlConnection con, User user)
     {
 
@@ -467,14 +600,32 @@ public class DBServices
 
         cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
 
-        cmd.Parameters.AddWithValue("@id", user.FirstName);
-        cmd.Parameters.AddWithValue("@city", user.FamilyName);
-        cmd.Parameters.AddWithValue("@address", user.Email);
-        cmd.Parameters.AddWithValue("@price", user.Password);
+        cmd.Parameters.AddWithValue("@firstName", user.FirstName);
+        cmd.Parameters.AddWithValue("@familyName", user.FamilyName);
+        cmd.Parameters.AddWithValue("@email", user.Email);
+        cmd.Parameters.AddWithValue("@password", user.Password);
         return cmd;
     }
 
+    private SqlCommand CreateUserUpdateCommandWithStoredProcedureWithParameters(String spName, SqlConnection con, string email, string password)
+    {
 
+        SqlCommand cmd = new SqlCommand(); // create the command object
+
+        cmd.Connection = con;              // assign the connection to the command object
+
+        cmd.CommandText = spName;      // can be Select, Insert, Update, Delete
+
+        cmd.CommandTimeout = 10;           // Time to wait for the execution' The default is 30 seconds
+
+        cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
+
+        cmd.Parameters.AddWithValue("@email", email);
+
+        cmd.Parameters.AddWithValue("@password", password);
+
+        return cmd;
+    }
     private SqlCommand CreateCommandWithStoredProcedureWithoutParameters(String spName, SqlConnection con)
     {
 

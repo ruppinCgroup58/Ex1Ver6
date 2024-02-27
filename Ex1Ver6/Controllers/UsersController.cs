@@ -1,5 +1,6 @@
 ﻿using Ex1Ver6.BL;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,9 +12,9 @@ namespace Ex1Ver6.Controllers
     {
         // GET: api/<UsersController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<User> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new User().Read();
         }
 
         // GET api/<UsersController>/5
@@ -25,15 +26,23 @@ namespace Ex1Ver6.Controllers
 
         // POST api/<UsersController>
         [HttpPost]
-        public bool Post([FromBody] User value)
+        public int Post([FromBody] User user)
         {
-            return value.Insert();
+            return user.Insert();
+        }
+
+        // POST api/<UsersController>
+        [HttpPost("{email}")]
+        public User Login(string email, [FromBody] string password )
+        {
+            return new User().Login(email, password);
         }
 
         // PUT api/<UsersController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{email}")]
+        public int Put(string email, [FromBody] string password)
         {
+            return new User().Update(email, password);
         }
 
         // DELETE api/<UsersController>/5
