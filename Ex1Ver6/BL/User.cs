@@ -28,14 +28,19 @@
         {
             return dbs.ReadUser();
         }
+
+        public User GetUser(string email)
+        {
+            return dbs.GetUser(email);
+        }
         public int Insert()
         {
             return dbs.InsertUser(this);
         }
 
-        public int Update(string email, string password)
+        public int Update(string firstName, string familyName, string email, string password)
         {
-            return dbs.UpdatePassword(email, password);
+            return dbs.UpdatePassword(firstName, familyName, email, password);
         }
 
         public User Login(string email, string password)

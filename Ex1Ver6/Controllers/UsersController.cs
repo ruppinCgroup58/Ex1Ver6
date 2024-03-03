@@ -18,10 +18,10 @@ namespace Ex1Ver6.Controllers
         }
 
         // GET api/<UsersController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{email}")]
+        public User Get(string email)
         {
-            return "value";
+            return new User().GetUser(email);
         }
 
         // POST api/<UsersController>
@@ -39,10 +39,10 @@ namespace Ex1Ver6.Controllers
         }
 
         // PUT api/<UsersController>/5
-        [HttpPut("{email}")]
-        public int Put(string email, [FromBody] string password)
+        [HttpPut("Put/firstName/{firstName}/familyName/{familyName}/email/{email}")]
+        public int Put(string firstName, string familyName, string email, [FromBody] string password)
         {
-            return new User().Update(email, password);
+            return new User().Update(firstName, familyName, email, password);
         }
 
         // DELETE api/<UsersController>/5
