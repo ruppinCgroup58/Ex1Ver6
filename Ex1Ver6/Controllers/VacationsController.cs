@@ -17,10 +17,11 @@ namespace Ex1Ver6.Controllers
         }
 
         // GET api/<VacationsController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{selectedMonth}")]
+        public List<Object> GetReport(string selectedMonth)
         {
-            return "value";
+            int month = int.Parse(selectedMonth);
+            return new Vacation().GetReport(month);
         }
 
         // POST api/<VacationsController>

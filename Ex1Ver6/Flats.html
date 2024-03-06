@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Flats</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
+    <script src="FlatScript.js"></script>
+    <script src="ajaxCalls.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>Flats page</h1>
+    <div id="InsersFlat">
+        <form id="flatForm">
+            <label>ID: </label>
+            <input type="text" id="flatID" class="input-data" required /> <br />
+            <label>City: </label>
+            <input list="flatCities" id="Cities" class="input-data" required/>
+            <datalist id="flatCities">
+                <option value="Tel-Aviv">
+                <option value="Afula">
+                <option value="Haifa">
+                <option value="Hadera">
+            </datalist>
+            <br />
+            <label>Adress: </label>
+            <input type="text" id="flatAdress" class="input-data" required maxlength="25"/> <br />
+            <label>Rooms: </label>
+            <input type="text" id="flatNumOfRooms" class="input-data" required
+                   pattern="[1-8]{1}"/> <br />
+            <label>Price: </label>
+            <input type="text" id="flatPrice" class="input-data" required /> <br />
+            <input type="submit" class="formSubmitBTN" value="Submit BTN" />
+        </form>
+    </div>
+
+    <div id="showFlats">
+        
+    </div>
+    
+</body>
+</html>

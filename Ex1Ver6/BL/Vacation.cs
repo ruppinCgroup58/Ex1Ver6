@@ -98,5 +98,11 @@ namespace Ex1Ver6.BL
         {
             return dbs.getVacationsByDates(start, end);
         }
+        public List<Object> GetReport(int selectedMonth)
+        {
+            return dbs.GetReport(selectedMonth);
+        }
+
+        
     }
 }

@@ -7,6 +7,8 @@ using System.Data;
 using System.Text;
 using Ex1Ver6.BL;
 using System.Collections;
+using System.Text.Json;
+using System.Runtime.Intrinsics.X86;
 
 public class DBServices
 {
@@ -22,6 +24,9 @@ public class DBServices
         con.Open();
         return con;
     }
+
+    //---------------Flats Functions---------------
+    #region Flats Functions
 
     /// <summary>
     /// This method reads flats from the flats table.
@@ -124,7 +129,7 @@ public class DBServices
     }
 
     /// <summary>
-    /// Get flats by city and price
+    /// This method gets flats by city and price input
     /// </summary>
     /// <param name="city"></param>
     /// <param name="price"></param>
@@ -220,6 +225,11 @@ public class DBServices
         
         return cmd;
     }
+
+    #endregion
+
+    //---------------Vacations Functions---------------
+    #region Vacations Functions
 
     /// <summary>
     /// This method reads vacations from the vacations table.
@@ -321,7 +331,7 @@ public class DBServices
     }
 
     /// <summary>
-    /// Get vacations by start date and end date
+    /// This method gets vacations by start date and end date input.
     /// </summary>
     /// <param name="start"></param>
     /// <param name="end"></param>
@@ -376,6 +386,59 @@ public class DBServices
         }
     }
 
+    /// <summary>
+    /// This method gets the report of average price per night in each city in a certain month.
+    /// </summary>
+    /// <param name="selectedMonth"></param>
+    /// <returns>List<Object> Ad Hoc</returns>
+    public List<Object> GetReport(int selectedMonth)
+    {
+        SqlConnection con;
+        SqlCommand cmd;
+        List<Object> objectList = new List<Object>();
+
+        try
+        {
+            con = connect("myProjDB"); // create the connection
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        cmd = CreateGetReportCommandWithStoredProcedureWithParameters("sp_getReport", con, selectedMonth);             // create the command
+
+        try
+        {
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            
+            while (dataReader.Read())
+            {              
+                objectList.Add(new
+                {
+                    city= dataReader["city"].ToString(),
+                   avg= Convert.ToDouble(dataReader["average_price_per_night"])             
+                });
+            }
+            return objectList;
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+    }
+
     private SqlCommand CreateVacationInsertCommandWithStoredProcedure(String spName, SqlConnection con, Vacation vacation)
     {
         SqlCommand cmd = new SqlCommand(); // create the command object
@@ -393,6 +456,22 @@ public class DBServices
         cmd.Parameters.AddWithValue("@flatId", vacation.FlatId);
         cmd.Parameters.AddWithValue("@startDate", vacation.StartDate);
         cmd.Parameters.AddWithValue("@endDate", vacation.EndDate);
+        return cmd;
+    }
+
+    private SqlCommand CreateGetReportCommandWithStoredProcedureWithParameters(String spName, SqlConnection con, int selectedMonth)
+    {
+        SqlCommand cmd = new SqlCommand(); // create the command object
+
+        cmd.Connection = con;              // assign the connection to the command object
+
+        cmd.CommandText = spName;      // can be Select, Insert, Update, Delete
+
+        cmd.CommandTimeout = 10;           // Time to wait for the execution' The default is 30 seconds
+
+        cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
+
+        cmd.Parameters.AddWithValue("@selectedMonth", @selectedMonth);
         return cmd;
     }
 
@@ -415,7 +494,17 @@ public class DBServices
 
         return cmd;
     }
+    #endregion
 
+    //---------------Users Functions---------------
+    #region Users Functions
+
+    /// <summary>
+    /// This method gets a single user by his email.
+    /// </summary>
+    /// <param name="email"></param>
+    /// <returns>User</returns>
+    /// <exception cref="Exception"></exception>
     public User GetUser(string email)
     {
         SqlConnection con;
@@ -442,12 +531,14 @@ public class DBServices
             u.FamilyName = dataReader["familyName"].ToString();
             u.Email = dataReader["email"].ToString();
             u.Password = dataReader["password"].ToString();
+            u.IsAdmin = dataReader.GetBoolean(dataReader.GetOrdinal("isAdmin"));
+            u.IsActive = dataReader.GetBoolean(dataReader.GetOrdinal("isActive"));
 
             return u;
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException("Not Found", null, System.Net.HttpStatusCode.NotFound);
+            throw new Exception("not found");
         }
 
         finally
@@ -459,6 +550,11 @@ public class DBServices
             }
         }
     }
+
+    /// <summary>
+    /// This method gets the list of all the users from the users table.
+    /// </summary>
+    /// <returns></returns>
     public List<User> ReadUser()
     {
 
@@ -489,6 +585,8 @@ public class DBServices
                 u.FamilyName = dataReader["familyName"].ToString();
                 u.Email = dataReader["email"].ToString();
                 u.Password = dataReader["password"].ToString();
+                u.IsAdmin = bool.Parse(dataReader["isAdmin"].ToString());
+                u.IsActive = bool.Parse(dataReader["isActive"].ToString());
                 usersList.Add(u);
             }
             return usersList;
@@ -510,6 +608,11 @@ public class DBServices
 
     }
 
+    /// <summary>
+    /// This method inserts a user to the users table.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
     public int InsertUser(User user)
     {
         SqlConnection con;
@@ -548,7 +651,15 @@ public class DBServices
         }
     }
 
-    public int UpdatePassword(string firstName, string familyName, string email, string password)
+    /// <summary>
+    /// This method updates the user's details in the users table.
+    /// </summary>
+    /// <param name="firstName"></param>
+    /// <param name="familyName"></param>
+    /// <param name="email"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    public int UpdateUserDetails(string firstName, string familyName, string email, string password)
     {
         SqlConnection con;
         SqlCommand cmd;
@@ -586,6 +697,13 @@ public class DBServices
         }
     }
 
+    /// <summary>
+    /// This method handles the login logic
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    /// <exception cref="HttpRequestException"></exception>
     public User Login(string email, string password)
     {
         SqlConnection con;
@@ -612,12 +730,58 @@ public class DBServices
                 u.FamilyName = dataReader["familyName"].ToString();
                 u.Email = dataReader["email"].ToString();
                 u.Password = dataReader["password"].ToString();
+                u.IsAdmin = bool.Parse(dataReader["isAdmin"].ToString());
+                u.IsActive = bool.Parse(dataReader["isActive"].ToString());
 
             return u;
         }
         catch (Exception ex)
         {
             throw new HttpRequestException("Not Found", null, System.Net.HttpStatusCode.NotFound);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+    }
+
+    /// <summary>
+    /// This method changes the user's status from active to in-active and vice-versa.
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="newStatus"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public bool ChangeStatus(string email, bool newStatus)
+    {
+        SqlConnection con;
+        SqlCommand cmd;
+
+        try
+        {
+            con = connect("myProjDB"); // create the connection
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        cmd = CreateUserChangeStatusCommandWithStoredProcedureWithParameters("sp_changeUserStatus", con, email, newStatus);             // create the command
+
+        try
+        {
+            int numEffected = cmd.ExecuteNonQuery(); // execute the command
+            if (numEffected > 0) { return true; } else { return false; }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
         }
 
         finally
@@ -688,21 +852,6 @@ public class DBServices
 
         return cmd;
     }
-    private SqlCommand CreateCommandWithStoredProcedureWithoutParameters(String spName, SqlConnection con)
-    {
-
-        SqlCommand cmd = new SqlCommand(); // create the command object
-
-        cmd.Connection = con;              // assign the connection to the command object
-
-        cmd.CommandText = spName;      // can be Select, Insert, Update, Delete
-
-        cmd.CommandTimeout = 10;           // Time to wait for the execution' The default is 30 seconds
-
-        cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
-
-        return cmd;
-    }
     private SqlCommand CreateUpdateCommandWithStoredProcedureWithParameters(String spName, SqlConnection con, string email)
     {
         SqlCommand cmd = new SqlCommand(); // create the command object
@@ -715,6 +864,42 @@ public class DBServices
 
         cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
         cmd.Parameters.AddWithValue("@email", email);
+
+        return cmd;
+    }
+    private SqlCommand CreateUserChangeStatusCommandWithStoredProcedureWithParameters(String spName, SqlConnection con, string email, bool newStatus)
+    {
+
+        SqlCommand cmd = new SqlCommand(); // create the command object
+
+        cmd.Connection = con;              // assign the connection to the command object
+
+        cmd.CommandText = spName;      // can be Select, Insert, Update, Delete
+
+        cmd.CommandTimeout = 10;           // Time to wait for the execution' The default is 30 seconds
+
+        cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
+
+        cmd.Parameters.AddWithValue("@email", email);
+
+        cmd.Parameters.AddWithValue("@newStatus", newStatus);
+
+        return cmd;
+    }
+    #endregion
+
+    private SqlCommand CreateCommandWithStoredProcedureWithoutParameters(String spName, SqlConnection con)
+    {
+
+        SqlCommand cmd = new SqlCommand(); // create the command object
+
+        cmd.Connection = con;              // assign the connection to the command object
+
+        cmd.CommandText = spName;      // can be Select, Insert, Update, Delete
+
+        cmd.CommandTimeout = 10;           // Time to wait for the execution' The default is 30 seconds
+
+        cmd.CommandType = System.Data.CommandType.StoredProcedure; // the type of the command, can also be text
 
         return cmd;
     }
